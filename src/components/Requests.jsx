@@ -1,0 +1,64 @@
+import axios from "axios";
+import { BASE_URL } from "../utils/constant";
+import { useDispatch, useSelector } from "react-redux";
+import { addRequests } from "../utils/requestSlice";
+import { useEffect } from "react";
+
+const Requests = () => {
+  const requests = useSelector((store) => store.requests);
+  const dispatch = useDispatch();
+
+  const fetchRequests = async () => {
+    try {
+      const res = await axios.get(BASE_URL + "/user/requests/received", {
+        withCredentials: true,
+      });
+      dispatch(addRequests(res.data.data));
+    } catch (err) {}
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  if (!requests) return;
+
+  if (requests.length === 0) return <h1> No Requests Found</h1>;
+
+  return (
+    <div className="text-center my-10">
+      <h1 className="text-bold text-white text-3xl">Connection Requests</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-2/3 mx-auto"></div>
+      {requests.map((request) => {
+        const { _id, firstName, lastName, photoUrl, age, gender, about } =
+          request;
+
+        return (
+          <div
+            key={_id}
+            className="flex flex-col items-center m-4 p-4 rounded-lg bg-base-300"
+          >
+            <img
+              alt="photo"
+              className="w-20 h-20 rounded-full mb-4"
+              src={photoUrl}
+            />
+
+            <div className="text-center ">
+              <h2 className="font-bold text-xl">
+                {firstName + " " + lastName}
+              </h2>
+              {age && gender && <p>{age + ", " + gender}</p>}
+              <p>{about}</p>
+            </div>
+            <div>
+              <button className="btn btn-primary mx-2">Reject</button>
+              <button className="btn btn-secondary mx-2">Accept</button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+export default Requests;
